@@ -29,6 +29,12 @@ The data model is in the `model` package and contains two entities, `Order` and 
 input tables will contain a number of items for each entity type. Names of the input tables are
 declared as constants in the `KafkaStreamsConfig` class.
 
+The standard Java Kafka-Streams DSL/API has been augmented with extensions and utility methods
+in order to simplify the usage of serializers/deserialization, as well as streamline boilderplate
+code. If you wish to use or see the implementation of these, please look inside `Materializations.kt`,
+`Processors.kt` and `Serdes.kt`. These extensions, when applied, have been configured to handle
+basic value types into basic serialized form, as well as complex objects into JSON.
+
 Your solution code should be in the form of a Kafka Streams topology declaration inside of the
 `Solution` class
 

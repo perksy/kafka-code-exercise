@@ -2,7 +2,6 @@ package com.perksy.kafkacodeexercise
 
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.KStream
-import com.perksy.kafkacodeexercise.KafkaStreamsConfig
 import com.perksy.kafkacodeexercise.model.OrderItem
 import org.apache.kafka.streams.kstream.Printed
 import org.springframework.context.annotation.Bean
