@@ -4,7 +4,6 @@ import com.github.javafaker.Faker;
 import com.perksy.kafkacodeexercise.model.Order;
 import com.perksy.kafkacodeexercise.model.OrderItem;
 import com.perksy.kafkacodeexercise.model.OrderStatus;
-import org.apache.kafka.clients.admin.Admin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +14,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 @Component
 public class SampleDataProducer {
@@ -43,6 +42,7 @@ public class SampleDataProducer {
     }
 
     public void seedSampleData() throws ExecutionException, InterruptedException {
+        logger.warn("Beginning data seed");
         Faker faker = new Faker();
         var orderCount = 100;
         var orderIds = new String[orderCount];
@@ -54,25 +54,21 @@ public class SampleDataProducer {
         final LinkedList<ListenableFuture<?>> futures = new LinkedList<>();
         for (String id: orderIdList
              ) {
-            var order = new Order();
-            order.setOrderId(id);
-            order.setStatus(OrderStatus.pending);
+            var order = new Order(id, OrderStatus.pending);
             futures.add(kafkaTemplate.send(KafkaStreamsConfig.ORDER_TOPIC, id , order));
             var numItems = faker.number().numberBetween(1, 10);
             for (int i = 0; i < numItems; i++) {
                 var amountCents = faker.number().numberBetween(10, 10000);
                 var amountDollars = new BigDecimal(amountCents).movePointLeft(2);
-                var orderItem = new OrderItem();
-                orderItem.setOrderId(id);
-                orderItem.setOrderItemId(faker.internet().uuid());
-                orderItem.setItemQuantity(faker.number().numberBetween(1, 5));
-                orderItem.setItemPrice(amountDollars);
+                var orderItem = new OrderItem(
+                    faker.internet().uuid(), id, amountDollars, faker.number().numberBetween(1, 5)
+                );
                 futures.add(kafkaTemplate.send(KafkaStreamsConfig.ORDER_ITEM_TOPIC, orderItem.getOrderItemId() , orderItem));
             }
 
         }
         CompletableFuture.allOf(futures.stream().map(ListenableFuture::completable).toArray(CompletableFuture[]::new)).get();
-        logger.info("Seeded sample Data");
+        logger.warn("Seeded sample Data");
     }
 
 
