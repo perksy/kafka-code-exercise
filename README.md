@@ -2,12 +2,11 @@
 
 ## Setup
 
-* Unzip Kafka distribution. It's being used for the `kafka-streams-application-reset.sh` utility
-called by the `reset.sh` script
 * Run `docker compose up` to start up a single Kafka node. (Run as a daemon if you choose to)
 * Check to make sure kafka is running with `docker compose ps`. Run `docker compose start kafka` if
 necessary.
 * Import the gradle project in this directory into the IDE of your choice
+* This docker installation is self-contained. If you `docker compose down` it will clear all the data
 
 ## Validate Setup
 
