@@ -49,29 +49,6 @@ public class KafkaStreamsConfig {
         return new NewTopic(ORDER_ITEM_TOPIC, 3, (short) 1);
     }
 
-    @EventListener
-    @Order(0)
-    public void onApplicationEvent(ContextRefreshedEvent event) throws ExecutionException, InterruptedException {
-        AdminClient adminClient = AdminClient.create(kafkaAdmin.getConfigurationProperties());
-        Map<TopicPartition, OffsetSpec> offsetRequests = new HashMap<>();
-        Map<TopicPartition, RecordsToDelete> deletions = new HashMap<>();
-        for (int i = 0; i < NUM_PARTITIONS; i++) {
-            offsetRequests.put(new TopicPartition(ORDER_TOPIC, i), OffsetSpec.latest());
-            offsetRequests.put(new TopicPartition(ORDER_ITEM_TOPIC, i), OffsetSpec.latest());
-        }
-        ListOffsetsResult listOffsetsResult = adminClient.listOffsets(offsetRequests);
-        for (int i = 0; i < NUM_PARTITIONS; i++) {
-            TopicPartition orderTopicPartition = new TopicPartition(ORDER_TOPIC, i);
-            TopicPartition itemTopicPartition = new TopicPartition(ORDER_ITEM_TOPIC, i);
-
-            deletions.put(orderTopicPartition, RecordsToDelete.beforeOffset(listOffsetsResult.partitionResult(orderTopicPartition).get().offset()));
-            deletions.put(itemTopicPartition, RecordsToDelete.beforeOffset(listOffsetsResult.partitionResult(itemTopicPartition).get().offset()));
-        }
-        DeleteRecordsResult result = adminClient.deleteRecords(deletions);
-        result.all().get();
-        logger.warn("Deleted all records");
-    }
-
     @Bean
     public StreamsBuilderFactoryBeanCustomizer customizeStreamsBuilder() {
         return factoryBean -> {
